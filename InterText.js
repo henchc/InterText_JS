@@ -1,4 +1,4 @@
-/*Script to find interextualities bewteen 2 texts
+/*Script to find intertextualities bewteen 2 texts
  *Author: Christopher Hench
  */
 
@@ -6,7 +6,7 @@ function generateSearchableHashFromList(listOfStrings) {
   
   var sHash = {}
   for (i in listOfStrings) {
-    for (n = 0; n < (listOfStrings.length - 2); n ++ {
+    for (n = 0; n < (listOfStrings.length - 2); n ++) {
       var doublet = listOfStrings[i].substring(n, n + 3).toLowerCase();
       if (! (doublet in sHash)) {
         sHash.doublet = [];
@@ -53,3 +53,18 @@ function searchThroughHash(searchString, sHash, listOfStrings) {
 
   return searchThroughList.call(searchString, mostPossible);
 }
+
+/**
+ * ngram function
+ */
+String.prototype.wordNgrams = function(n) {
+    var r = [];
+    var splitN = this.split(" ");
+    console.log(splitN)
+    for(var i = 0; i <= splitN.length - n; i++) {
+      r.push(splitN.slice(i, i + n));
+    }
+    return r;
+}
+
+console.log(s.wordNgrams(3));
