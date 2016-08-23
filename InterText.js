@@ -6,12 +6,13 @@ function generateSearchableHashFromList(listOfStrings) {
   
   var sHash = {}
   for (i in listOfStrings) {
-    for (n = 0; n < (listOfStrings.length - 2); n ++) {
-      var doublet = listOfStrings[i].substring(n, n + 3).toLowerCase();
+    for (n = 0; n < (listOfStrings.length - 1); n ++) {
+      var doublet = listOfStrings[i].substring(n, n + 2).toLowerCase();
+      console.log(doublet);
       if (! (doublet in sHash)) {
-        sHash.doublet = [];
+        sHash[doublet] = [];
       }
-      sHash.doublet.push(listOfStrings[i]);
+      sHash[doublet].push(listOfStrings[i]);
     }
   }
 
@@ -60,11 +61,19 @@ function searchThroughHash(searchString, sHash, listOfStrings) {
 String.prototype.wordNgrams = function(n) {
     var r = [];
     var splitN = this.split(" ");
-    console.log(splitN)
     for(var i = 0; i <= splitN.length - n; i++) {
       r.push(splitN.slice(i, i + n));
     }
     return r;
 }
 
-console.log(s.wordNgrams(3));
+s = "hello there my name is chris"
+sl = s.wordNgrams(3);
+console.log(sl);
+
+var joinsl = []
+for (n in sl) {
+  joinsl.push(sl[n].join(''));
+}
+
+console.log(generateSearchableHashFromList(joinsl));
