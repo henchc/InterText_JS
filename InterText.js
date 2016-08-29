@@ -1,6 +1,14 @@
 /*Script to find intertextualities bewteen 2 texts
  *Author: Christopher Hench
  */
+
+var compareStrings = function(strings) {
+
+  leven = strings[0].levenshtein(strings[1]);
+
+  return leven;
+};
+
 var searchThroughList = function(searchString, listOfStrings) {
 
     var stringArray = [];
@@ -31,11 +39,11 @@ var searchThroughList = function(searchString, listOfStrings) {
     } else {
         return False;
     }
-}
+};
 
 var generateSearchableHashFromList = function(listOfStrings) {
 
-    var sHash = {}
+    var sHash = {};
     for (i = 0; i < listOfStrings.length; i++) {
         for (n = 0; n < (listOfStrings.length - 1); n++) {
             var doublet = listOfStrings[i].substring(n, n + 2).toLowerCase();
@@ -48,7 +56,7 @@ var generateSearchableHashFromList = function(listOfStrings) {
     }
 
     return sHash;
-}
+};
 
 var searchThroughHash = function(searchString, sHash, listOfStrings) {
 
@@ -72,11 +80,11 @@ var searchThroughHash = function(searchString, sHash, listOfStrings) {
         function(a, b) {
             return a[1] - b[1];
         }
-    )
-    var mostCommonCounts = countsSorted.slice(1, 1000)
-    var mostCommon = []
+    );
+    var mostCommonCounts = countsSorted.slice(1, 1000);
+    var mostCommon = [];
     for (d = 0; d < mostCommonCounts.length; d++) {
-        mostCommon.push(mostCommonCounts[d][1])
+        mostCommon.push(mostCommonCounts[d][1]);
     }
     mostPossible = [];
     for (p = 0; p < 1000; p++) {
@@ -84,7 +92,7 @@ var searchThroughHash = function(searchString, sHash, listOfStrings) {
     }
 
     return searchThroughList.call(searchString, mostPossible);
-}
+};
 
 /**
  * ngram function
@@ -96,7 +104,7 @@ String.prototype.wordNgrams = function(n) {
         r.push(splitN.slice(i, i + n));
     }
     return r;
-}
+};
 
 /*
  * Levenshtein
@@ -119,12 +127,20 @@ String.prototype.levenshtein = function(string) {
                 m[i - 1][j - 1] :
                 m[i][j] = min(
                     m[i - 1][j - 1] + 1,
-                    min(m[i][j - 1] + 1, m[i - 1][j] + 1))
+                    min(m[i][j - 1] + 1, m[i - 1][j] + 1));
         }
     }
 
     return m[b.length][a.length];
-}
+};
 
-var test_string = "hello";
-console.log(test_string.levenshtein("hell"));
+var text_1 = "";
+var text_2 = "";
+var compWindow= 3;
+var thresh = 3;
+
+var text_1_words = text_1.split(" ");
+var text_2_words = text_2.split(" ");
+
+var text_1_tris = text_1_words.wordNgrams(3);
+var text_2_tris = text_2_words.wordNgrams(3);
