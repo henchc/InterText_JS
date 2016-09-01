@@ -134,13 +134,84 @@ String.prototype.levenshtein = function(string) {
     return m[b.length][a.length];
 };
 
-var text_1 = "";
-var text_2 = "";
+var text1 = "";
+var text2 = "";
 var compWindow= 3;
 var thresh = 3;
 
-var text_1_words = text_1.split(" ");
-var text_2_words = text_2.split(" ");
+var text1Words = text1.split(" ");
+var text2Words = text2.split(" ");
 
-var text_1_tris = text_1_words.wordNgrams(3);
-var text_2_tris = text_2_words.wordNgrams(3);
+var text1Tris = text1Words.wordNgrams(3);
+var text2Tris = text2Words.wordNgrams(3);
+
+var joinedTrisObjText2 = {};
+var joinedTrisText2 = [];
+
+for (i = 0; i < text2Tris.length; i++) {
+  sortedTri = text2Tris[i].sort();
+  joinedTri = sortedTri.join('');
+  joinedTrisObjText2[joinedTri] = i;
+  joinedTrisText2.push(joinedTri);
+}
+
+var joinedTrisObjText1 = {};
+var joinedTrisText1 = [];
+
+for (i = 0; i < text1Tris.length; i++) {
+  sortedTri = text1Tris[i].sort();
+  joinedTri = sortedTri.join('');
+  joinedTrisObjText1[joinedTri] = i;
+  joinedTrisText1.push(joinedTri);
+}
+
+var hashes2 = generateSearchableHashFromList(joinedTrisText2);
+var hashes1 = generateSearchableHashFromList(joinedTrisText1);
+
+var collectedMatches = [];
+
+for (i = 0; i < joinedTrisText1.length; i++) {
+  a = searchThroughHash(joinedTrisText1[i], hashes2, joinedTrisText2);
+  if (a) {
+    collectedMatches.push([text2Tris[joinedTrisObjText2[a]], text1Tris[joinedTrisObjText1[a]]]);
+  }
+}
+
+var add = function(a, b) {
+  return a + b;
+};
+
+var siftedMatches = [];
+
+for (i = 0; i < collectedMatches.length; i++ ) {
+  triScore = 0;
+  for (w = 0; w < collectedMatches[i].length; w++) {
+    triScore += scoreWord(collectedMatches[i][w]);
+  }
+  if (triScore > 2) {
+    siftedMatches.push([collectedMatches[i], triScore]);
+  }
+}
+
+Array.prototype.contains = function(v) {
+    for(var i = 0; i < this.length; i++) {
+        if(this[i] === v) return true;
+    }
+    return false;
+};
+
+Array.prototype.unique = function() {
+    var arr = [];
+    for(var i = 0; i < this.length; i++) {
+        if(!arr.contains(this[i])) {
+            arr.push(this[i]);
+        }
+    }
+    return arr; 
+};
+
+var uniqueMatches = siftedMatches.unique();
+
+for (i = 0; i < uniqueMatches.length; i++) {
+  console.log(uniqueMatches[i]);
+}
