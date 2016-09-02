@@ -2,6 +2,10 @@
  *Author: Christopher Hench
  */
 
+/**
+ * returns the edit distance between
+ * two string using the Levenshtein
+ */
 var compareStrings = function(strings) {
 
   leven = strings[0].levenshtein(strings[1]);
@@ -9,43 +13,59 @@ var compareStrings = function(strings) {
   return leven;
 };
 
+/**
+ * searches through list of strings from the hash table
+ * and compares with a search string
+ */
 var searchThroughList = function(searchString, listOfStrings) {
 
     var stringArray = [];
-    for (i = 0; i < listOfStrings.length; i++) {
+    for (var i = 0; i < listOfStrings.length; i++) {
         stringArray.push([searchString.toLowerCase(), listOfStrings[i].toLowerCase()]);
     }
 
     var results = [];
     for (i = 0; i < stringArray.length; i++) {
-        results.push(compareString(stringArray[i]));
+        var score = compareStrings(stringArray[i]);
+        results.push([stringArray[i][0], stringArray[i][1], score]);
     }
 
-    var sortedResults = [];
-
-    var finalResult = [];
-    for (i = 0; i < sortedResults.length; i++) {
-        if (sortedResults[i][2] > threshold) {
-            finalResult.push(sortedResults[i]);
+    var sortedResults = results.sort(
+        function(a, b) {
+            return a[2] - b[2];
         }
+    );
+
+    sortedResults = sortedResults.reverse();
+
+    var finalResults = [];
+    for (i = 0; i < sortedResults.length; i++) {
+      // threshold set below
+      if (sortedResults[i][2] < 6) {
+        finalResults.push(sortedResults[i]);
+      }
     }
 
-    if (finalResult.length > 0) {
+    if (finalResults.length > 0) {
         var loweredList = [];
         for (i = 0; i < listOfStrings.length; i++) {
             loweredList.push(listOfStrings[i].toLowerCase());
         }
-        return listOfStrings[loweredList.indexOf(finalResult[0][1])];
+        var jTri = listOfStrings[loweredList.indexOf(finalResults[0][1])];
+        return jTri;
     } else {
-        return False;
+        return false;
     }
 };
 
+/**
+ * generates hash table from list of joined trigrams
+ */
 var generateSearchableHashFromList = function(listOfStrings) {
 
     var sHash = {};
     var doublet = "";
-    for (i = 0; i < listOfStrings.length; i++) {
+    for (var i = 0; i < listOfStrings.length; i++) {
         for (n = 0; n < (listOfStrings[i].length - 2); n++) {
             doublet = listOfStrings[i];
             doublet = doublet.substring(n, n + 3);
@@ -59,11 +79,15 @@ var generateSearchableHashFromList = function(listOfStrings) {
     return sHash;
 };
 
+/**
+ * searches through hash to retrieve corresponding
+ * list of strings
+ */
 var searchThroughHash = function(searchString, sHash, listOfStrings) {
 
     searchString = searchString.toLowerCase();
     possibleStrings = [];
-    for (i = 0; i < (searchString.length - 2); i++) {
+    for (var i = 0; i < (searchString.length - 2); i++) {
         var doublet = searchString.substring(i, i + 3);
         if (doublet in sHash) {
             possibleStrings.push.apply(possibleStrings, sHash[doublet]);
@@ -74,27 +98,27 @@ var searchThroughHash = function(searchString, sHash, listOfStrings) {
         counts[possibleStrings[i]] = 1 + (counts[possibleStrings[i]] || 0);
     }
     var sortable = [];
-    for (s = 0; s < counts.length; s++) {
-        sortable.push([s, counts[s]]);
+    for (var key in counts) {
+        sortable.push([key, counts[key]]);
     }
     var countsSorted = sortable.sort(
         function(a, b) {
             return a[1] - b[1];
         }
     );
-    var mostCommonCounts = countsSorted.slice(1, 1000);
+    var mostCommonCounts = countsSorted.slice(-1000);
     var mostCommon = [];
     for (d = 0; d < mostCommonCounts.length; d++) {
-        mostCommon.push(mostCommonCounts[d][1]);
-    }
-    mostPossible = [];
-    for (p = 0; p < 1000; p++) {
-        mostPossible.push(mostCommon[p]);
+        mostCommon.push(mostCommonCounts[d][0]);
     }
 
-    return searchThroughList(searchString, mostPossible);
+    return searchThroughList(searchString, mostCommon);
 };
 
+/**
+ * simple ngram function to change array of words
+ * to ngrams
+ */
 function ngrams(array, length) {
     var ngramsArray = [];
 
@@ -102,7 +126,7 @@ function ngrams(array, length) {
         var subNgramsArray = [];
 
         for (var j = 0; j < length; j++) {
-            subNgramsArray.push(array[i + j])
+            subNgramsArray.push(array[i + j]);
         }
 
         ngramsArray.push(subNgramsArray);
@@ -111,22 +135,10 @@ function ngrams(array, length) {
     return ngramsArray;
 }
 
+
 /**
- * ngram function
+ * Levenshtein algortihm
  */
-String.prototype.wordNgrams = function(n) {
-    var r = [];
-    var splitN = this.split(" ");
-    for (i = 0; i <= splitN.length - n; i++) {
-        r.push(splitN.slice(i, i + n));
-    }
-    return r;
-};
-
-/*
- * Levenshtein
- */
-
 String.prototype.levenshtein = function(string) {
     var a = this,
         b = string + "",
@@ -152,12 +164,14 @@ String.prototype.levenshtein = function(string) {
 };
 
 
-// Main program here
+// Main program starts here
 
+// only for testing
 var fs = require('fs');
 var text1 = fs.readFileSync('texts/amoris.txt', "utf8");
 var text2 = fs.readFileSync('texts/cb.txt', "utf8");
 
+// for web implementation
 // var text1 = "";
 // var text2 = "";
 var compWindow= 3;
@@ -166,16 +180,13 @@ var thresh = 3;
 var text1Words = text1.split(" ");
 var text2Words = text2.split(" ");
 
-// var text1Tris = text1Words.wordNgrams(3);
-// var text2Tris = text2Words.wordNgrams(3);
-
 var text1Tris = ngrams(text1Words, 3);
 var text2Tris = ngrams(text2Words, 3);
 
 var joinedTrisObjText2 = {};
 var joinedTrisText2 = [];
 
-for (i = 0; i < text2Tris.length; i++) {
+for (var i = 0; i < text2Tris.length; i++) {
   sortedTri = text2Tris[i].sort();
   joinedTri = sortedTri.join('');
   joinedTrisObjText2[joinedTri] = i;
@@ -185,7 +196,7 @@ for (i = 0; i < text2Tris.length; i++) {
 var joinedTrisObjText1 = {};
 var joinedTrisText1 = [];
 
-for (i = 0; i < text1Tris.length; i++) {
+for (var i = 0; i < text1Tris.length; i++) {
   sortedTri = text1Tris[i].sort();
   joinedTri = sortedTri.join('');
   joinedTrisObjText1[joinedTri] = i;
@@ -193,18 +204,18 @@ for (i = 0; i < text1Tris.length; i++) {
 }
 
 var hashes2 = generateSearchableHashFromList(joinedTrisText2);
-var hashes1 = generateSearchableHashFromList(joinedTrisText1);
 
 var collectedMatches = [];
 
-for (i = 0; i < joinedTrisText1.length; i++) {
-  a = searchThroughHash(joinedTrisText1[i], hashes2, joinedTrisText2);
+for (var i = 0; i < joinedTrisText1.length; i++) {
+  var t = joinedTrisText1[i];
+  var a = searchThroughHash(t, hashes2, joinedTrisText2);
   if (a) {
-    collectedMatches.push([text2Tris[joinedTrisObjText2[a]], text1Tris[joinedTrisObjText1[a]]]);
+    collectedMatches.push([text2Tris[joinedTrisObjText2[a]], text1Tris[joinedTrisObjText1[t]]]);
   }
 }
 
-console.log(collectedMatches)
+console.log(collectedMatches);
 
 // var add = function(a, b) {
 //   return a + b;
