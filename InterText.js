@@ -44,10 +44,11 @@ var searchThroughList = function(searchString, listOfStrings) {
 var generateSearchableHashFromList = function(listOfStrings) {
 
     var sHash = {};
+    var doublet = "";
     for (i = 0; i < listOfStrings.length; i++) {
-        for (n = 0; n < (listOfStrings.length - 1); n++) {
-            var doublet = listOfStrings[i].substring(n, n + 2).toLowerCase();
-            console.log(doublet);
+        for (n = 0; n < (listOfStrings[i].length - 2); n++) {
+            doublet = listOfStrings[i];
+            doublet = doublet.substring(n, n + 3);
             if (!(doublet in sHash)) {
                 sHash[doublet] = [];
             }
@@ -88,11 +89,27 @@ var searchThroughHash = function(searchString, sHash, listOfStrings) {
     }
     mostPossible = [];
     for (p = 0; p < 1000; p++) {
-        mostPossible.push(most_common[p]);
+        mostPossible.push(mostCommon[p]);
     }
 
-    return searchThroughList.call(searchString, mostPossible);
+    return searchThroughList(searchString, mostPossible);
 };
+
+function ngrams(array, length) {
+    var ngramsArray = [];
+
+    for (var i = 0; i < array.length - (length - 1); i++) {
+        var subNgramsArray = [];
+
+        for (var j = 0; j < length; j++) {
+            subNgramsArray.push(array[i + j])
+        }
+
+        ngramsArray.push(subNgramsArray);
+    }
+
+    return ngramsArray;
+}
 
 /**
  * ngram function
@@ -134,16 +151,26 @@ String.prototype.levenshtein = function(string) {
     return m[b.length][a.length];
 };
 
-var text1 = "";
-var text2 = "";
+
+// Main program here
+
+var fs = require('fs');
+var text1 = fs.readFileSync('texts/amoris.txt', "utf8");
+var text2 = fs.readFileSync('texts/cb.txt', "utf8");
+
+// var text1 = "";
+// var text2 = "";
 var compWindow= 3;
 var thresh = 3;
 
 var text1Words = text1.split(" ");
 var text2Words = text2.split(" ");
 
-var text1Tris = text1Words.wordNgrams(3);
-var text2Tris = text2Words.wordNgrams(3);
+// var text1Tris = text1Words.wordNgrams(3);
+// var text2Tris = text2Words.wordNgrams(3);
+
+var text1Tris = ngrams(text1Words, 3);
+var text2Tris = ngrams(text2Words, 3);
 
 var joinedTrisObjText2 = {};
 var joinedTrisText2 = [];
@@ -177,41 +204,43 @@ for (i = 0; i < joinedTrisText1.length; i++) {
   }
 }
 
-var add = function(a, b) {
-  return a + b;
-};
+console.log(collectedMatches)
 
-var siftedMatches = [];
+// var add = function(a, b) {
+//   return a + b;
+// };
 
-for (i = 0; i < collectedMatches.length; i++ ) {
-  triScore = 0;
-  for (w = 0; w < collectedMatches[i].length; w++) {
-    triScore += scoreWord(collectedMatches[i][w]);
-  }
-  if (triScore > 2) {
-    siftedMatches.push([collectedMatches[i], triScore]);
-  }
-}
+// var siftedMatches = [];
 
-Array.prototype.contains = function(v) {
-    for(var i = 0; i < this.length; i++) {
-        if(this[i] === v) return true;
-    }
-    return false;
-};
+// for (i = 0; i < collectedMatches.length; i++ ) {
+//   triScore = 0;
+//   for (w = 0; w < collectedMatches[i].length; w++) {
+//     triScore += scoreWord(collectedMatches[i][w]);
+//   }
+//   if (triScore > 2) {
+//     siftedMatches.push([collectedMatches[i], triScore]);
+//   }
+// }
 
-Array.prototype.unique = function() {
-    var arr = [];
-    for(var i = 0; i < this.length; i++) {
-        if(!arr.contains(this[i])) {
-            arr.push(this[i]);
-        }
-    }
-    return arr; 
-};
+// Array.prototype.contains = function(v) {
+//     for(var i = 0; i < this.length; i++) {
+//         if(this[i] === v) return true;
+//     }
+//     return false;
+// };
 
-var uniqueMatches = siftedMatches.unique();
+// Array.prototype.unique = function() {
+//     var arr = [];
+//     for(var i = 0; i < this.length; i++) {
+//         if(!arr.contains(this[i])) {
+//             arr.push(this[i]);
+//         }
+//     }
+//     return arr; 
+// };
 
-for (i = 0; i < uniqueMatches.length; i++) {
-  console.log(uniqueMatches[i]);
-}
+// var uniqueMatches = siftedMatches.unique();
+
+// for (i = 0; i < uniqueMatches.length; i++) {
+//   console.log(uniqueMatches[i]);
+// }
